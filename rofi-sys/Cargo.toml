@@ -1,0 +1,8 @@
+[package]
+name = 'rofi-sys'
+version = '0.0.0'
+edition = '2018'
+
+[dependencies]
+cairo-sys-rs = '0.14'
+glib-sys = '0.14'

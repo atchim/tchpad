@@ -1,0 +1,17 @@
+[package]
+name = 'tchpad'
+version = '0.0.0'
+edition = '2018'
+
+[dependencies]
+xcb = '0.10'
+
+[dependencies.rofi-sys]
+path = 'rofi-sys'
+
+[dependencies.xcb-util]
+features = ['ewmh']
+version = '0.4'
+
+[lib]
+crate-type = ['cdylib']
