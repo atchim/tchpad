@@ -16,7 +16,6 @@ pub struct Win {
   id: Window,
   instance: String,
   name: String,
-  urgent_atom: Atom,
 }
 
 impl Win {
@@ -80,7 +79,6 @@ impl Win {
     let n = get_wm_desktop(e, id).get_reply().unwrap();
     let desktop = desktops[n as usize].to_string();
     let hidden_atom = e.WM_STATE_HIDDEN();
-    let urgent_atom = e.WM_STATE_DEMANDS_ATTENTION();
 
     Some(Win {
       atoms,
@@ -90,7 +88,6 @@ impl Win {
       id,
       instance,
       name,
-      urgent_atom
     })
   }
 
@@ -104,9 +101,5 @@ impl Win {
 
   fn update_atoms(&mut self, e: &Ewmh) {
     self.atoms = Self::fetch_atoms(e, self.id)
-  }
-
-  pub fn urgent(&self) -> bool {
-    self.atoms.contains(&self.urgent_atom)
   }
 }

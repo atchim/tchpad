@@ -13,7 +13,6 @@ use rofi_sys::{
   helper::find_arg_str,
   mode::{MODE_EXIT, ModeMode, mode_get_private_data, mode_set_private_data},
   mode_private::{ABI_VERSION, Mode},
-  text_box::URGENT,
 };
 
 use crate::tchpad::Tchpad;
@@ -54,15 +53,13 @@ extern "C" fn destroy(mode: *mut Mode) {
 extern "C" fn get_display_value(
   mode: *const Mode,
   selected_line: c_uint,
-  state: *mut c_int,
+  _state: *mut c_int,
   _attribute_list: *mut *mut GList,
   get_entry: c_int,
 ) -> *mut c_char {
   let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
   assert!(!t.is_null());
-
   let win = unsafe {&(*t).wins()[selected_line as usize]};
-  unsafe {win.urgent().then(|| *state |= URGENT);}
 
   match get_entry != 0 {
     false => null_mut(),
