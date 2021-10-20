@@ -14,6 +14,7 @@ use crate::win::Win;
 pub struct Tchpad {
   desktops: Vec<String>,
   e: Ewmh,
+  hidden_atom: Atom,
   hidden_fmt: String,
   ignored_atoms: Vec<Atom>,
   screen: i32,
@@ -24,10 +25,16 @@ pub struct Tchpad {
 impl Tchpad {
   fn fetch_desktops(&mut self) {
     let reply = get_desktop_names(&self.e, self.screen).get_reply().unwrap();
-    self.desktops = reply.strings()
-      .iter()
-      .map(|s| String::from(*s))
-      .collect();
+    self.desktops = reply.strings().iter().map(|s| s.to_string()).collect();
+  }
+
+  fn fetch_ignored_atoms(&mut self) {
+    self.ignored_atoms = vec![
+      self.e.WM_STATE_SKIP_PAGER(),
+      self.e.WM_STATE_SKIP_TASKBAR(),
+      self.e.WM_WINDOW_TYPE_DOCK(),
+      self.e.WM_WINDOW_TYPE_DESKTOP(),
+    ];
   }
 
   fn fetch_wins(&mut self) {
@@ -50,23 +57,18 @@ impl Tchpad {
 
     self.wins = ids
       .iter()
-      .filter_map(
-        |id| Win::new(*id, &self.e, &self.ignored_atoms, &self.desktops)
-      )
+      .filter_map(|id| Win::new(
+        *id,
+        &self.e,
+        &self.desktops,
+        &self.hidden_atom,
+        &self.ignored_atoms,
+      ))
       .collect();
   }
 
   pub fn hidden_fmt(&self) -> &str {
     &self.hidden_fmt
-  }
-
-  fn ignore_atoms(&mut self) {
-    self.ignored_atoms = vec![
-      self.e.WM_STATE_SKIP_PAGER(),
-      self.e.WM_STATE_SKIP_TASKBAR(),
-      self.e.WM_WINDOW_TYPE_DOCK(),
-      self.e.WM_WINDOW_TYPE_DESKTOP(),
-    ];
   }
 
   pub fn new(win_fmt: &str, hidden_fmt: &str) -> Self {
@@ -75,27 +77,25 @@ impl Tchpad {
 
     let mut t = Tchpad {
       desktops: vec![],
-      hidden_fmt: String::from(hidden_fmt),
+      hidden_atom: e.WM_STATE_HIDDEN(),
       e,
+      hidden_fmt: String::from(hidden_fmt),
       ignored_atoms: vec![],
       screen,
       win_fmt: String::from(win_fmt),
       wins: vec![],
     };
 
-    t.ignore_atoms();
+    t.fetch_ignored_atoms();
     t.fetch_desktops();
     t.fetch_wins();
     t
   }
 
-  pub fn switch_hidden(&mut self, index: usize) {
-    self.wins[index].switch_hidden(&self.e);
-  }
-
   pub fn win_fmt(&self) -> &str {
     &self.win_fmt
   }
+
   pub fn wins(&self) -> &[Win] {
     &self.wins[..]
   }

@@ -1,7 +1,7 @@
 use std::cmp::Ordering::{Equal, Greater, Less};
 
 use regex::{Captures, Regex};
-use xcb::{Atom, Window, map_window, unmap_window};
+use xcb::{Atom, Window};
 
 use xcb_util::{
   ewmh::{Connection as Ewmh, get_wm_desktop, get_wm_name, get_wm_state},
@@ -9,11 +9,9 @@ use xcb_util::{
 };
 
 pub struct Win {
-  atoms: Vec<Atom>,
   class: String,
   desktop: String,
-  hidden_atom: Atom,
-  id: Window,
+  hidden: bool,
   instance: String,
   name: String,
 }
@@ -53,53 +51,29 @@ impl Win {
     s.into()
   }
 
-  fn fetch_atoms(e: &Ewmh, id: Window) -> Vec<Atom> {
-    get_wm_state(e, id)
-      .get_reply()
-      .map(|s| s.atoms().iter().map(|a| *a).collect::<Vec<Atom>>())
-      .unwrap_or(vec![])
-  }
-
-  fn hidden(&self) -> bool {
-    self.atoms.contains(&self.hidden_atom)
+  pub fn hidden(&self) -> bool {
+    self.hidden
   }
 
   pub fn new<T: ToString>(
     id: Window,
     e: &Ewmh,
-    ignored: &[Atom],
     desktops: &[T],
+    hidden: &Atom,
+    ignored: &[Atom],
   ) -> Option<Self> {
-    let atoms = Self::fetch_atoms(e, id);
+    let atoms = get_wm_state(e, id)
+      .get_reply()
+      .map(|s| s.atoms().iter().map(|a| *a).collect::<Vec<Atom>>())
+      .unwrap_or(vec![]);
     if atoms.iter().filter(|a| ignored.contains(a)).count() > 0 {return None;}
+    let hidden = atoms.contains(hidden);
     let class = get_wm_class(e, id).get_reply().unwrap();
     let instance = class.instance().to_owned();
     let class = class.class().to_owned();
-    let name = get_wm_name(e, id).get_reply().unwrap().string().to_owned();
     let n = get_wm_desktop(e, id).get_reply().unwrap();
     let desktop = desktops[n as usize].to_string();
-    let hidden_atom = e.WM_STATE_HIDDEN();
-
-    Some(Win {
-      atoms,
-      class,
-      desktop,
-      hidden_atom,
-      id,
-      instance,
-      name,
-    })
-  }
-
-  pub fn switch_hidden(&mut self, e: &Ewmh) {
-    match self.hidden() {
-      false => unmap_window(&e, self.id).request_check().unwrap(),
-      true => map_window(&e, self.id).request_check().unwrap(),
-    }
-    self.update_atoms(e);
-  }
-
-  fn update_atoms(&mut self, e: &Ewmh) {
-    self.atoms = Self::fetch_atoms(e, self.id)
+    let name = get_wm_name(e, id).get_reply().unwrap().string().into();
+    Some(Win {class, desktop, hidden, instance, name})
   }
 }

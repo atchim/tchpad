@@ -11,7 +11,7 @@ use glib_sys::GList;
 
 use rofi_sys::{
   helper::find_arg_str,
-  mode::{MODE_EXIT, ModeMode, mode_get_private_data, mode_set_private_data},
+  mode::{mode_get_private_data, mode_set_private_data},
   mode_private::{ABI_VERSION, Mode},
 };
 
@@ -24,12 +24,12 @@ static mut MODE: Mode = Mode {
   name: null_mut(),
   cfg_name_key: [0; 128],
   display_name: null_mut(),
-  _init: Some(init),
-  _destroy: Some(destroy),
-  _get_num_entries: Some(get_num_entries),
-  _result: Some(result),
+  _init: Some(tchpad_init),
+  _destroy: Some(tchpad_destroy),
+  _get_num_entries: Some(tchpad_get_num_entries),
+  _result: None,
   _token_match: None,
-  _get_display_value: Some(get_display_value),
+  _get_display_value: Some(tchpad_get_display_value),
   _get_icon: None,
   _get_completion: None,
   _preprocess_input: None,
@@ -42,15 +42,15 @@ static mut MODE: Mode = Mode {
 
 #[link_section = ".init_array"]
 #[no_mangle]
-static MODE_INIT: extern "C" fn() = mode_init;
+static TCHPAD_INIT_MODE: extern "C" fn() = tchpad_init_mode;
 
-extern "C" fn destroy(mode: *mut Mode) {
+extern "C" fn tchpad_destroy(mode: *mut Mode) {
   let t = unsafe {mode_get_private_data(mode)};
   assert!(!t.is_null());
   unsafe {Box::from_raw(t as *mut Tchpad);}
 }
 
-extern "C" fn get_display_value(
+extern "C" fn tchpad_get_display_value(
   mode: *const Mode,
   selected_line: c_uint,
   _state: *mut c_int,
@@ -70,13 +70,13 @@ extern "C" fn get_display_value(
   }
 }
 
-extern "C" fn get_num_entries(mode: *const Mode) -> u32 {
+extern "C" fn tchpad_get_num_entries(mode: *const Mode) -> u32 {
   let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
   assert!(!t.is_null());
   unsafe {(*t).wins().len() as u32}
 }
 
-extern "C" fn init(mode: *mut Mode) -> c_int {
+extern "C" fn tchpad_init(mode: *mut Mode) -> c_int {
   let t = unsafe {mode_get_private_data(mode)};
   assert!(t.is_null());
 
@@ -103,18 +103,6 @@ extern "C" fn init(mode: *mut Mode) -> c_int {
   return 1;
 }
 
-extern "C" fn mode_init() {
+extern "C" fn tchpad_init_mode() {
   unsafe {MODE.name = CString::new("tchpad").unwrap().into_raw();}
-}
-
-extern "C" fn result(
-  mode: *mut Mode,
-  _menu_retv: c_int,
-  _input: *mut *mut c_char,
-  selected_line: c_uint,
-) -> ModeMode {
-  let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
-  assert!(!t.is_null());
-  unsafe {(*t).switch_hidden(selected_line as usize);}
-  MODE_EXIT
 }
