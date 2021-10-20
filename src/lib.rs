@@ -67,7 +67,7 @@ extern "C" fn get_display_value(
   match get_entry != 0 {
     false => null_mut(),
     true => {
-      let s = unsafe {win.display_str((*t).win_fmt())};
+      let s = unsafe {win.display_value((*t).win_fmt(), (*t).hidden_fmt())};
       CString::new(s.as_bytes()).unwrap().into_raw()
     }
   }
@@ -83,16 +83,25 @@ extern "C" fn init(mode: *mut Mode) -> c_int {
   let t = unsafe {mode_get_private_data(mode)};
   assert!(t.is_null());
 
-  let arg = CString::new("-window-format").unwrap();
-  let mut val = null_mut();
-  unsafe {find_arg_str(arg.as_ptr() as *const c_char, &mut val);}
+  let win_arg = CString::new("-tchpad-win").unwrap();
+  let mut win_fmt = null_mut();
+  unsafe {find_arg_str(win_arg.as_ptr() as *const c_char, &mut win_fmt);}
 
-  let val = match val.is_null() {
-    false => unsafe {CStr::from_ptr(val).to_string_lossy()},
-    true => "{w}    {c}   {t}".into(),
+  let win_fmt = match win_fmt.is_null() {
+    false => unsafe {CStr::from_ptr(win_fmt).to_string_lossy()},
+    true => "{d:8}  {c:8}  {n}".into(),
   };
 
-  let t = Box::new(Tchpad::new(&val));
+  let hidden_arg = CString::new("-tchpad-hidden").unwrap();
+  let mut hidden_fmt = null_mut();
+  unsafe {find_arg_str(hidden_arg.as_ptr() as *const c_char, &mut hidden_fmt);}
+
+  let hidden_fmt = match hidden_fmt.is_null() {
+    false => unsafe {CStr::from_ptr(hidden_fmt).to_string_lossy()},
+    true => "{d:8}  {c:8} *{n}".into(),
+  };
+
+  let t = Box::new(Tchpad::new(&win_fmt, &hidden_fmt));
   unsafe {mode_set_private_data(mode, Box::into_raw(t) as *mut c_void);}
   return 1;
 }

@@ -5,6 +5,7 @@ edition = '2018'
 
 [dependencies]
 glib-sys = '0.14'
+regex = '1.5'
 xcb = '0.10'
 
 [dependencies.rofi-sys]

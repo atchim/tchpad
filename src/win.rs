@@ -1,3 +1,6 @@
+use std::cmp::Ordering::{Equal, Greater, Less};
+
+use regex::{Captures, Regex};
 use xcb::{Atom, Window, map_window, unmap_window};
 
 use xcb_util::{
@@ -17,18 +20,38 @@ pub struct Win {
 }
 
 impl Win {
-  pub fn display_str(&self, fmt: &str) -> String {
-    // TODO: Find out a better way to do this.
-    let s = fmt.replacen("{c}", &self.class, 1)
-      .replacen("{n}", &self.instance, 1)
-      .replacen("{r}", "", 1) // NOTE: Not implemented yet.
-      .replacen("{t}", &self.name, 1)
-      .replacen("{w}", &self.desktop, 1);
+  pub fn display_value(&self, win_fmt: &str, hidden_fmt: &str) -> String {
+    let r = Regex::new(r"\{(c|d|i|n)(:(\d+))?\}").unwrap();
 
-    match self.hidden() {
-      false => s,
-      true => format!("[{}]", &s),
-    }
+    let s = match self.hidden() {
+      false => win_fmt,
+      true => hidden_fmt,
+    };
+
+    let s = r.replace_all(s, |caps: &Captures| {
+      let prop = match &caps[1] {
+        "c" => &self.class,
+        "d" => &self.desktop,
+        "i" => &self.instance,
+        "n" => &self.name,
+        _ => unreachable!(),
+      };
+
+      match caps.get(3) {
+        None => prop.into(),
+        Some(len) => {
+          let cap_len: usize = len.as_str().parse().unwrap();
+          let prop_len = prop.len();
+          match cap_len.cmp(&prop_len) {
+            Equal => prop.into(),
+            Greater => format!("{}{}", prop, " ".repeat(cap_len - prop_len)),
+            Less => prop[..cap_len].into(),
+          }
+        }
+      }
+    });
+
+    s.into()
   }
 
   fn fetch_atoms(e: &Ewmh, id: Window) -> Vec<Atom> {

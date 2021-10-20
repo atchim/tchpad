@@ -14,6 +14,7 @@ use crate::win::Win;
 pub struct Tchpad {
   desktops: Vec<String>,
   e: Ewmh,
+  hidden_fmt: String,
   ignored_atoms: Vec<Atom>,
   screen: i32,
   win_fmt: String,
@@ -55,6 +56,10 @@ impl Tchpad {
       .collect();
   }
 
+  pub fn hidden_fmt(&self) -> &str {
+    &self.hidden_fmt
+  }
+
   fn ignore_atoms(&mut self) {
     self.ignored_atoms = vec![
       self.e.WM_STATE_SKIP_PAGER(),
@@ -64,12 +69,13 @@ impl Tchpad {
     ];
   }
 
-  pub fn new(win_fmt: &str) -> Self {
+  pub fn new(win_fmt: &str, hidden_fmt: &str) -> Self {
     let (x, screen) = Xcb::connect(None).unwrap();
     let e = Ewmh::connect(x).map_err(|(err, _)| err).unwrap();
 
     let mut t = Tchpad {
       desktops: vec![],
+      hidden_fmt: String::from(hidden_fmt),
       e,
       ignored_atoms: vec![],
       screen,
