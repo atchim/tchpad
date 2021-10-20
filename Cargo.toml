@@ -4,13 +4,14 @@ version = '0.0.0'
 edition = '2018'
 
 [dependencies]
+glib-sys = '0.14'
 xcb = '0.10'
 
 [dependencies.rofi-sys]
 path = 'rofi-sys'
 
 [dependencies.xcb-util]
-features = ['ewmh']
+features = ['ewmh', 'icccm']
 version = '0.4'
 
 [lib]
