@@ -20,9 +20,10 @@ impl Default for Opts {
   fn default() -> Self {
     let cmd = fetch_arg("-tchpad-cmd").unwrap_or_default();
     let hidden = fetch_arg("-tchpad-hidden")
-      .unwrap_or("{d:8}  {c:8} *{n}".into());
-    let sh = fetch_arg("-tchpad-sh").unwrap_or("sh".into());
-    let win = fetch_arg("-tchpad-win").unwrap_or("{d:8}  {c:8}  {n}".into());
+      .unwrap_or_else(|| "{d:8}  {c:8} *{n}".into());
+    let sh = fetch_arg("-tchpad-sh").unwrap_or_else(|| "sh".into());
+    let win = fetch_arg("-tchpad-win")
+      .unwrap_or_else(|| "{d:8}  {c:8}  {n}".into());
     Opts {cmd, hidden, sh, win}
   }
 }

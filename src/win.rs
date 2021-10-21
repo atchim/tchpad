@@ -96,8 +96,8 @@ impl Win {
   ) -> Option<Self> {
     let atoms = get_wm_state(e, id)
       .get_reply()
-      .map(|s| s.atoms().iter().map(|a| *a).collect::<Vec<Atom>>())
-      .unwrap_or(vec![]);
+      .map(|s| s.atoms().iter().copied().collect::<Vec<Atom>>())
+      .unwrap_or_default();
 
     match atoms.iter().filter(|a| ignored.contains(a)).count() > 0 {
       false => {
