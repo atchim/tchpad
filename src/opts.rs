@@ -10,10 +10,21 @@ pub struct Opts {
 }
 
 impl Opts {
-  pub fn cmd(&self) -> &str {&self.cmd}
-  pub fn hidden(&self) -> &str {&self.hidden}
-  pub fn sh(&self) -> &str {&self.sh}
-  pub fn win(&self) -> &str {&self.win}
+  pub fn cmd(&self) -> &str {
+    &self.cmd
+  }
+
+  pub fn hidden(&self) -> &str {
+    &self.hidden
+  }
+
+  pub fn sh(&self) -> &str {
+    &self.sh
+  }
+
+  pub fn win(&self) -> &str {
+    &self.win
+  }
 }
 
 impl Default for Opts {
