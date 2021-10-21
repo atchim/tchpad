@@ -3,7 +3,21 @@ use std::cmp::Ordering::{Equal, Greater, Less};
 use regex::{Captures, Regex};
 use xcb::{Atom, CURRENT_TIME, Window, ffi::xcb_window_t};
 
-use xcb_util::{ewmh::{CLIENT_SOURCE_TYPE_OTHER, Connection as Ewmh, get_current_desktop, get_wm_desktop, get_wm_name, get_wm_state, request_change_active_window, request_change_current_desktop, request_close_window}, ffi::ewmh::XCB_EWMH_CLIENT_SOURCE_TYPE_OTHER, icccm::get_wm_class};
+use xcb_util::{
+  ewmh::{
+    CLIENT_SOURCE_TYPE_OTHER,
+    Connection as Ewmh,
+    get_current_desktop,
+    get_wm_desktop,
+    get_wm_name,
+    get_wm_state,
+    request_change_active_window,
+    request_change_current_desktop,
+    request_close_window,
+  },
+  ffi::ewmh::XCB_EWMH_CLIENT_SOURCE_TYPE_OTHER,
+  icccm::get_wm_class,
+};
 
 pub struct Win {
   class: String,
