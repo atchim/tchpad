@@ -9,20 +9,23 @@ use xcb_util::ewmh::{
   get_desktop_names,
 };
 
-use crate::win::Win;
+use crate::{opts::Opts, win::Win};
 
 pub struct Tchpad {
   desktops: Vec<String>,
   e: Ewmh,
   hidden_atom: Atom,
-  hidden_fmt: String,
   ignored_atoms: Vec<Atom>,
+  opts: Opts,
   screen: i32,
-  win_fmt: String,
   wins: Vec<Win>,
 }
 
 impl Tchpad {
+  pub fn e(&self) -> &Ewmh {
+    &self.e
+  }
+
   fn fetch_desktops(&mut self) {
     let reply = get_desktop_names(&self.e, self.screen).get_reply().unwrap();
     self.desktops = reply.strings().iter().map(|s| s.to_string()).collect();
@@ -67,11 +70,21 @@ impl Tchpad {
       .collect();
   }
 
-  pub fn hidden_fmt(&self) -> &str {
-    &self.hidden_fmt
+  pub fn opts(&self) -> &Opts {
+    &self.opts
   }
 
-  pub fn new(win_fmt: &str, hidden_fmt: &str) -> Self {
+  pub fn screen(&self) -> i32 {
+    self.screen
+  }
+
+  pub fn wins(&self) -> &[Win] {
+    &self.wins[..]
+  }
+}
+
+impl Default for Tchpad {
+  fn default() -> Self {
     let (x, screen) = Xcb::connect(None).unwrap();
     let e = Ewmh::connect(x).map_err(|(err, _)| err).unwrap();
 
@@ -79,10 +92,9 @@ impl Tchpad {
       desktops: vec![],
       hidden_atom: e.WM_STATE_HIDDEN(),
       e,
-      hidden_fmt: String::from(hidden_fmt),
       ignored_atoms: vec![],
+      opts: Opts::default(),
       screen,
-      win_fmt: String::from(win_fmt),
       wins: vec![],
     };
 
@@ -90,13 +102,5 @@ impl Tchpad {
     t.fetch_desktops();
     t.fetch_wins();
     t
-  }
-
-  pub fn win_fmt(&self) -> &str {
-    &self.win_fmt
-  }
-
-  pub fn wins(&self) -> &[Win] {
-    &self.wins[..]
   }
 }
