@@ -30,6 +30,10 @@ pub struct Win {
 }
 
 impl Win {
+  pub fn class(&self) -> &str {
+    &self.class
+  }
+
   pub fn close(&self, e: &Ewmh, screen: i32) {
     let req = request_close_window(
       e,
@@ -39,6 +43,10 @@ impl Win {
       CLIENT_SOURCE_TYPE_OTHER,
     );
     req.request_check().unwrap();
+  }
+
+  pub fn desktop(&self) -> &str {
+    &self.desktop
   }
 
   pub fn display_value(&self, win_fmt: &str, hidden_fmt: &str) -> String {
@@ -101,6 +109,10 @@ impl Win {
     self.id
   }
 
+  pub fn instance(&self) -> &str {
+    &self.instance
+  }
+
   pub fn new<T: ToString>(
     id: Window,
     e: &Ewmh,
@@ -126,6 +138,10 @@ impl Win {
       }
       true => None,
     }
+  }
+
+  pub fn name(&self) -> &str {
+    &self.name
   }
 }
 

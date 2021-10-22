@@ -12,6 +12,7 @@ use std::{
 use glib_sys::GList;
 
 use rofi_sys::{
+  helper::helper_token_match,
   mode::{
     MENU_CANCEL,
     MENU_CUSTOM_ACTION,
@@ -22,6 +23,7 @@ use rofi_sys::{
     mode_set_private_data,
   },
   mode_private::{ABI_VERSION, Mode},
+  types::rofi_int_matcher,
 };
 
 use crate::tchpad::Tchpad;
@@ -37,7 +39,7 @@ static mut MODE: Mode = Mode {
   _destroy: Some(tchpad_destroy),
   _get_num_entries: Some(tchpad_get_num_entries),
   _result: Some(tchpad_result),
-  _token_match: None,
+  _token_match: Some(tchpad_token_match),
   _get_display_value: Some(tchpad_get_display_value),
   _get_icon: None,
   _get_completion: None,
@@ -129,4 +131,60 @@ extern "C" fn tchpad_result(
     }
   }
   MODE_EXIT
+}
+
+// NOTE: This is almost the same code as Rofi's window dialog, but in Rust.
+// TODO: Use the `regex` crate to match tokens.
+extern "C" fn tchpad_token_match(
+  mode: *const Mode,
+  tokens: *mut *mut rofi_int_matcher,
+  index: c_uint,
+) -> c_int {
+  let mut matched = true;
+
+  if !tokens.is_null() {
+    let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
+    assert!(!t.is_null());
+    let win = unsafe {&(*t).wins()[index as usize]};
+    let mut i = 0;
+
+    loop {
+      // Check if this loop must break...
+      if !matched {break;}
+      if tokens.is_null() {break;}
+      let token = unsafe {*(tokens).offset(i)};
+      if token.is_null() {break;}
+
+      // Same hack as the one from Rofi.
+      let ftokens: [*mut rofi_int_matcher; 2] = [token, null_mut()];
+      let mut test = 0;
+
+      unsafe {
+        if (*t).opts().fields().class() {
+          let class = CString::new(win.class().as_bytes()).unwrap();
+          test = helper_token_match(ftokens.as_ptr(), class.as_ptr());
+        }
+
+        if test == (*token).invert && (*t).opts().fields().desktop() {
+          let desktop = CString::new(win.desktop().as_bytes()).unwrap();
+          test = helper_token_match(ftokens.as_ptr(), desktop.as_ptr());
+        }
+
+        if test == (*token).invert && (*t).opts().fields().instance() {
+          let instance = CString::new(win.instance().as_bytes()).unwrap();
+          test = helper_token_match(ftokens.as_ptr(), instance.as_ptr());
+        }
+
+        if test == (*token).invert && (*t).opts().fields().name() {
+          let name = CString::new(win.name().as_bytes()).unwrap();
+          test = helper_token_match(ftokens.as_ptr(), name.as_ptr());
+        }
+      }
+
+      matched = test != 0;
+      i += 1;
+    }
+  }
+
+  matched.into()
 }
