@@ -8,8 +8,8 @@ use crate::opts::fields::Fields;
 
 pub struct Opts {
   cmd: String,
-  hidden: String,
   fields: Fields,
+  hidden: String,
   sh: String,
   win: String,
 }
@@ -53,6 +53,7 @@ fn fetch_arg(name: &str) -> Option<String> {
   let arg = CString::new(name.as_bytes()).unwrap();
   let mut val = null_mut();
   unsafe {find_arg_str(arg.as_ptr() as *const c_char, &mut val);}
+
   match val.is_null() {
     false => {
       let c_str = unsafe {CStr::from_ptr(val as *const c_char)};

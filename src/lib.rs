@@ -9,6 +9,7 @@ use std::{
   ptr::null_mut,
 };
 
+use cairo::ffi::cairo_surface_t;
 use glib_sys::GList;
 
 use rofi_sys::{
@@ -41,7 +42,7 @@ static mut MODE: Mode = Mode {
   _result: Some(tchpad_result),
   _token_match: Some(tchpad_token_match),
   _get_display_value: Some(tchpad_get_display_value),
-  _get_icon: None,
+  _get_icon: Some(tchpad_get_icon),
   _get_completion: None,
   _preprocess_input: None,
   _get_message: None,
@@ -71,6 +72,7 @@ extern "C" fn tchpad_get_display_value(
   let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
   assert!(!t.is_null());
   let win = unsafe {&(*t).wins()[selected_line as usize]};
+
   match get_entry != 0 {
     false => null_mut(),
     true => {
@@ -80,6 +82,17 @@ extern "C" fn tchpad_get_display_value(
       CString::new(s.as_bytes()).unwrap().into_raw()
     }
   }
+}
+
+extern "C" fn tchpad_get_icon(
+  mode: *const Mode,
+  selected_line: c_uint,
+  height: c_int,
+) -> *mut cairo_surface_t {
+  let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
+  assert!(!t.is_null());
+  let win = unsafe {(*t).win(selected_line as usize)};
+  win.fetch_icon(height)
 }
 
 extern "C" fn tchpad_get_num_entries(mode: *const Mode) -> u32 {
@@ -110,6 +123,7 @@ extern "C" fn tchpad_result(
     let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
     assert!(!t.is_null());
     let win = unsafe {&(*t).wins()[selected_line as usize]};
+
     match (menu_retv as u32 & MENU_OK) > 0 {
       false => unsafe {win.close((*t).e(), (*t).screen())},
       true => match (menu_retv as u32 & MENU_CUSTOM_ACTION) > 0 {
@@ -130,6 +144,7 @@ extern "C" fn tchpad_result(
       }
     }
   }
+
   MODE_EXIT
 }
 

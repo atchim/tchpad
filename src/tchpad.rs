@@ -78,6 +78,10 @@ impl Tchpad {
     self.screen
   }
 
+  pub fn win(&mut self, index: usize) -> &mut Win {
+    &mut self.wins[index]
+  }
+
   pub fn wins(&self) -> &[Win] {
     &self.wins[..]
   }
