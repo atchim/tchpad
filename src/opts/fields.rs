@@ -1,28 +1,10 @@
 use crate::opts::fetch_arg;
 
 pub struct Fields {
-  class: bool,
-  desktop: bool,
-  instance: bool,
-  name: bool,
-}
-
-impl Fields {
-  pub fn class(&self) -> bool {
-    self.class
-  }
-
-  pub fn desktop(&self) -> bool {
-    self.desktop
-  }
-
-  pub fn instance(&self) -> bool {
-    self.instance
-  }
-
-  pub fn name(&self) -> bool {
-    self.name
-  }
+  pub class: bool,
+  pub desktop: bool,
+  pub instance: bool,
+  pub name: bool,
 }
 
 impl Default for Fields {

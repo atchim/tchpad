@@ -7,33 +7,11 @@ use rofi_sys::helper::find_arg_str;
 use crate::opts::fields::Fields;
 
 pub struct Opts {
-  cmd: String,
-  fields: Fields,
-  hidden: String,
-  sh: String,
-  win: String,
-}
-
-impl Opts {
-  pub fn cmd(&self) -> &str {
-    &self.cmd
-  }
-
-  pub fn fields(&self) -> &Fields {
-    &self.fields
-  }
-
-  pub fn hidden(&self) -> &str {
-    &self.hidden
-  }
-
-  pub fn sh(&self) -> &str {
-    &self.sh
-  }
-
-  pub fn win(&self) -> &str {
-    &self.win
-  }
+  pub cmd: String,
+  pub fields: Fields,
+  pub hidden: String,
+  pub sh: String,
+  pub win: String,
 }
 
 impl Default for Opts {

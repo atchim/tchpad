@@ -22,21 +22,17 @@ use xcb_util::{
 };
 
 pub struct Win {
-  class: String,
-  desktop: String,
+  pub class: String,
+  pub desktop: String,
   desktop_n: u32,
-  hidden: bool,
+  pub hidden: bool,
   icon: u32,
-  id: Atom,
-  instance: String,
-  name: String,
+  pub id: Atom,
+  pub instance: String,
+  pub name: String,
 }
 
 impl Win {
-  pub fn class(&self) -> &str {
-    &self.class
-  }
-
   pub fn close(&self, e: &Ewmh, screen: i32) {
     let req = request_close_window(
       e,
@@ -48,14 +44,10 @@ impl Win {
     req.request_check().unwrap();
   }
 
-  pub fn desktop(&self) -> &str {
-    &self.desktop
-  }
-
   pub fn display_value(&self, win_fmt: &str, hidden_fmt: &str) -> String {
     let r = Regex::new(r"\{(c|d|i|n)(:(\d+))?\}").unwrap();
 
-    let s = match self.hidden() {
+    let s = match self.hidden {
       false => win_fmt,
       true => hidden_fmt,
     };
@@ -112,22 +104,6 @@ impl Win {
       unsafe {rofi_view_get_window()},
     );
     req.request_check().unwrap();
-  }
-
-  pub fn hidden(&self) -> bool {
-    self.hidden
-  }
-
-  pub fn id(&self) -> Window {
-    self.id
-  }
-
-  pub fn instance(&self) -> &str {
-    &self.instance
-  }
-
-  pub fn name(&self) -> &str {
-    &self.name
   }
 
   pub fn new<T: ToString>(

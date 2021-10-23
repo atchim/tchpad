@@ -13,19 +13,15 @@ use crate::{opts::Opts, win::Win};
 
 pub struct Tchpad {
   desktops: Vec<String>,
-  e: Ewmh,
+  pub e: Ewmh,
   hidden_atom: Atom,
   ignored_atoms: Vec<Atom>,
-  opts: Opts,
-  screen: i32,
-  wins: Vec<Win>,
+  pub opts: Opts,
+  pub screen: i32,
+  pub wins: Vec<Win>,
 }
 
 impl Tchpad {
-  pub fn e(&self) -> &Ewmh {
-    &self.e
-  }
-
   fn fetch_desktops(&mut self) {
     let reply = get_desktop_names(&self.e, self.screen).get_reply().unwrap();
     self.desktops = reply.strings().iter().map(|s| s.to_string()).collect();
@@ -68,22 +64,6 @@ impl Tchpad {
         &self.ignored_atoms,
       ))
       .collect();
-  }
-
-  pub fn opts(&self) -> &Opts {
-    &self.opts
-  }
-
-  pub fn screen(&self) -> i32 {
-    self.screen
-  }
-
-  pub fn win(&mut self, index: usize) -> &mut Win {
-    &mut self.wins[index]
-  }
-
-  pub fn wins(&self) -> &[Win] {
-    &self.wins[..]
   }
 }
 

@@ -71,13 +71,13 @@ extern "C" fn tchpad_get_display_value(
 ) -> *mut c_char {
   let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
   assert!(!t.is_null());
-  let win = unsafe {&(*t).wins()[selected_line as usize]};
+  let win = unsafe {&(*t).wins[selected_line as usize]};
 
   match get_entry != 0 {
     false => null_mut(),
     true => {
       let s = unsafe {
-        win.display_value((*t).opts().win(), (*t).opts().hidden())
+        win.display_value(&(*t).opts.win, &(*t).opts.hidden)
       };
       CString::new(s.as_bytes()).unwrap().into_raw()
     }
@@ -91,14 +91,14 @@ extern "C" fn tchpad_get_icon(
 ) -> *mut cairo_surface_t {
   let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
   assert!(!t.is_null());
-  let win = unsafe {(*t).win(selected_line as usize)};
+  let win = unsafe {&mut (*t).wins[selected_line as usize]};
   win.fetch_icon(height)
 }
 
 extern "C" fn tchpad_get_num_entries(mode: *const Mode) -> u32 {
   let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
   assert!(!t.is_null());
-  unsafe {(*t).wins().len() as u32}
+  unsafe {(*t).wins.len() as u32}
 }
 
 extern "C" fn tchpad_init(mode: *mut Mode) -> c_int {
@@ -122,20 +122,20 @@ extern "C" fn tchpad_result(
   if (menu_retv as u32 & MENU_CANCEL) == 0 {
     let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
     assert!(!t.is_null());
-    let win = unsafe {&(*t).wins()[selected_line as usize]};
+    let win = unsafe {&(*t).wins[selected_line as usize]};
 
     match (menu_retv as u32 & MENU_OK) > 0 {
-      false => unsafe {win.close((*t).e(), (*t).screen())},
+      false => unsafe {win.close(&(*t).e, (*t).screen)},
       true => match (menu_retv as u32 & MENU_CUSTOM_ACTION) > 0 {
-        false => unsafe {win.focus((*t).e(), (*t).screen())},
+        false => unsafe {win.focus(&(*t).e, (*t).screen)},
         true => {
-          let opts = unsafe {(*t).opts()};
-          match opts.cmd().is_empty() {
+          let opts = unsafe {&(*t).opts};
+          match opts.cmd.is_empty() {
             false => {
-              let _ = Command::new(opts.sh())
+              let _ = Command::new(&opts.sh)
                 .arg("-c")
-                .arg(opts.cmd())
-                .env("TCHPAD_WIN", win.id().to_string())
+                .arg(&opts.cmd)
+                .env("TCHPAD_WIN", win.id.to_string())
                 .spawn();
             }
             true => (),
@@ -160,7 +160,7 @@ extern "C" fn tchpad_token_match(
   if !tokens.is_null() {
     let t = unsafe {mode_get_private_data(mode) as *mut Tchpad};
     assert!(!t.is_null());
-    let win = unsafe {&(*t).wins()[index as usize]};
+    let win = unsafe {&(*t).wins[index as usize]};
     let mut i = 0;
 
     loop {
@@ -175,23 +175,23 @@ extern "C" fn tchpad_token_match(
       let mut test = 0;
 
       unsafe {
-        if (*t).opts().fields().class() {
-          let class = CString::new(win.class().as_bytes()).unwrap();
+        if (*t).opts.fields.class {
+          let class = CString::new(win.class.as_bytes()).unwrap();
           test = helper_token_match(ftokens.as_ptr(), class.as_ptr());
         }
 
-        if test == (*token).invert && (*t).opts().fields().desktop() {
-          let desktop = CString::new(win.desktop().as_bytes()).unwrap();
+        if test == (*token).invert && (*t).opts.fields.desktop {
+          let desktop = CString::new(win.desktop.as_bytes()).unwrap();
           test = helper_token_match(ftokens.as_ptr(), desktop.as_ptr());
         }
 
-        if test == (*token).invert && (*t).opts().fields().instance() {
-          let instance = CString::new(win.instance().as_bytes()).unwrap();
+        if test == (*token).invert && (*t).opts.fields.instance {
+          let instance = CString::new(win.instance.as_bytes()).unwrap();
           test = helper_token_match(ftokens.as_ptr(), instance.as_ptr());
         }
 
-        if test == (*token).invert && (*t).opts().fields().name() {
-          let name = CString::new(win.name().as_bytes()).unwrap();
+        if test == (*token).invert && (*t).opts.fields.name {
+          let name = CString::new(win.name.as_bytes()).unwrap();
           test = helper_token_match(ftokens.as_ptr(), name.as_ptr());
         }
       }
