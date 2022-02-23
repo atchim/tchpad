@@ -1,18 +1,20 @@
+PLUGIN = tchpad
 PLUGINSDIR = $(DESTDIR)`pkg-config --variable=pluginsdir rofi`
+RELEASE = target/release/lib$(PLUGIN).so
 
-all: target/release/libtchpad.so
+all: $(RELEASE)
 
-clean:
-	rm -fr Cargo.lock target
-
-install: all
-	mkdir -p $(PLUGINSDIR)
-	cp -f target/release/libtchpad.so $(PLUGINSDIR)/tchpad.so
-
-target/release/libtchpad.so:
+$(RELEASE):
 	cargo build --release
 
+clean:
+	rm -fr target
+
+install: $(RELEASE)
+	mkdir -p $(PLUGINSDIR)
+	cp -f $< $(PLUGINSDIR)/$(PLUGIN).so
+
 uninstall:
-	rm -f $(PLUGINSDIR)/tchpad.so
+	rm -f $(PLUGINSDIR)/$(PLUGIN).so
 
 .PHONY: all clean install uninstall

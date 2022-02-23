@@ -77,7 +77,7 @@ impl Default for Tchpad {
       hidden_atom: e.WM_STATE_HIDDEN(),
       e,
       ignored_atoms: vec![],
-      opts: Opts::default(),
+      opts: Opts::from_args(),
       screen,
       wins: vec![],
     };

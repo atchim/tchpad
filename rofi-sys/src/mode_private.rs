@@ -20,29 +20,27 @@ pub struct Mode {
   pub name: *mut c_char,
   pub cfg_name_key: [c_char; 128],
   pub display_name: *mut c_char,
-  pub _init: Option<extern "C" fn(sw: *mut Mode) -> c_int>,
-  pub _destroy: Option<extern "C" fn(sw: *mut Mode)>,
-  pub _get_num_entries: Option<extern "C" fn(sw: *const Mode) -> c_uint>,
-
+  pub _init: Option<unsafe extern "C" fn(sw: *mut Mode) -> c_int>,
+  pub _destroy: Option<unsafe extern "C" fn(sw: *mut Mode)>,
+  pub _get_num_entries:
+    Option<unsafe extern "C" fn(sw: *const Mode) -> c_uint>,
   pub _result: Option<
-    extern "C" fn(
+    unsafe extern "C" fn(
       sw: *mut Mode,
       menu_retv: c_int,
       input: *mut *mut c_char,
       selected_line: c_uint,
     ) -> ModeMode
   >,
-
   pub _token_match: Option<
-    extern "C" fn(
+    unsafe extern "C" fn(
       data: *const Mode,
       tokens: *mut *mut rofi_int_matcher,
       index: c_uint,
     ) -> c_int
   >,
-
   pub _get_display_value: Option<
-    extern "C" fn(
+    unsafe extern "C" fn(
       sw: *const Mode,
       selected_line: c_uint,
       state: *mut c_int,
@@ -50,26 +48,23 @@ pub struct Mode {
       get_entry: c_int,
     ) -> *mut c_char
   >,
-
   pub _get_icon: Option<
-    extern "C" fn(
+    unsafe extern "C" fn(
       sw: *const Mode,
       selected_line: c_uint,
       height: c_int,
     ) -> *mut cairo_surface_t
   >,
-
   pub _get_completion: Option<
-    extern "C" fn(sw: *const Mode, selected_line: c_uint) -> *mut c_char
+    unsafe extern "C" fn(sw: *const Mode, selected_line: c_uint) -> *mut c_char
   >,
-
   pub _preprocess_input: Option<
-    extern "C" fn(sw: *mut Mode, input: *const c_char) -> *mut c_char
+    unsafe extern "C" fn(sw: *mut Mode, input: *const c_char) -> *mut c_char
   >,
-
-  pub _get_message: Option<extern "C" fn(sw: *const Mode) -> *mut c_char>,
+  pub _get_message:
+    Option<unsafe extern "C" fn(sw: *const Mode) -> *mut c_char>,
   pub private_data: *mut c_void,
-  pub free: Option<extern "C" fn(data: *mut Mode)>,
+  pub free: Option<unsafe extern "C" fn(data: *mut Mode)>,
   pub ed: *mut c_void,
   pub module: *mut GModule,
 }

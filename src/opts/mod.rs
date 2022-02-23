@@ -1,10 +1,8 @@
 mod fields;
 
-use std::{ffi::{CStr, CString}, os::raw::c_char, ptr::null_mut};
-
 use rofi_sys::helper::find_arg_str;
-
-use crate::opts::fields::Fields;
+use self::fields::Fields;
+use std::{ffi::{CStr, CString}, os::raw::c_char, ptr::null_mut};
 
 pub struct Opts {
   pub cmd: String,
@@ -14,10 +12,13 @@ pub struct Opts {
   pub win: String,
 }
 
-impl Default for Opts {
-  fn default() -> Self {
+impl Opts {
+  pub fn from_args() -> Self {
     let cmd = fetch_arg("-tchpad-cmd").unwrap_or_default();
-    let fields = Fields::default();
+    let fields = match fetch_arg("-tchpad-fields") {
+      None => Fields::default(),
+      Some(s) => Fields::from(s.as_str()),
+    };
     let hidden = fetch_arg("-tchpad-hidden")
       .unwrap_or_else(|| "{d:8}  {c:8} *{n}".into());
     let sh = fetch_arg("-tchpad-sh").unwrap_or_else(|| "sh".into());
