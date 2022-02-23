@@ -28,13 +28,13 @@ impl From<&str> for Fields {
       name: false,
     };
 
-    s.split_terminator(',').for_each(|field| {
-      match field {
-        "class" => f.class = true,
-        "desktop" => f.desktop = true,
-        "instance" => f.instance = true,
-        "name" => f.name = true,
-        s => g_warning!(G_LOG_DOMAIN, "Invalid field: '{}'", s),
+    s.chars().for_each(|c| {
+      match c {
+        'c' => f.class = true,
+        'd' => f.desktop = true,
+        'i' => f.instance = true,
+        'n' => f.name = true,
+        c => g_warning!(G_LOG_DOMAIN, "Invalid field flag: '{}'", c),
       }
     });
 
